@@ -1,0 +1,16 @@
+{
+  "name": "@agentica/bridge",
+  "version": "1.0.0",
+  "description": "Bridge local Node.js – Manos del Agente Aegis (WebSocket + MCP + Neo4j)",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "ws": "^8.17.0",
+    "neo4j-driver": "^5.19.0"
+  }
+}

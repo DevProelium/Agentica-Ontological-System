@@ -1,0 +1,146 @@
+/**
+ * PrivacyShield.jsx – Módulo de Blindaje del Usuario
+ *
+ * Muestra el indicador de integridad ontológica y gestiona las alertas
+ * de privacidad en lenguaje humano (no técnico).
+ * "Este módulo es el corazón del concepto Aegis como escudo."
+ */
+
+import { useCallback } from 'react';
+import { analizarMensaje, getIntegrityIndicator } from '../../core/privacyShield.js';
+import useOntologyStore from '../../store/ontologyStore.js';
+
+export default function PrivacyShield() {
+  const { agente, alertas, agregarAlerta, descartarAlerta } = useOntologyStore();
+  const indicador = getIntegrityIndicator(agente.integridad_ontologica);
+
+  const analizarTexto = useCallback((texto, origen = 'usuario') => {
+    const resultado = analizarMensaje(texto, { origen });
+    if (!resultado.seguro) {
+      for (const alerta of resultado.alertas) {
+        agregarAlerta({
+          id: `alerta-${Date.now()}-${alerta.patron_id}`,
+          tipo: 'privacidad',
+          nivel: alerta.nivel_alerta,
+          mensaje_usuario: alerta.mensaje_usuario,
+          nombre_patron: alerta.nombre,
+          origen,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+    return resultado;
+  }, [agregarAlerta]);
+
+  return (
+    <div className="privacy-shield">
+      {/* ─── Indicador de Integridad ─────────────── */}
+      <div
+        className="integridad-indicator"
+        style={{ '--color-integridad': indicador.color }}
+        title={`Integridad: ${(agente.integridad_ontologica * 100).toFixed(0)}%`}
+        aria-label={indicador.mensaje}
+      >
+        <span className="integridad-icono" role="img" aria-hidden="true">{indicador.icono}</span>
+        <div className="integridad-info">
+          <span className="integridad-nivel">{indicador.nivel}</span>
+          <div className="integridad-barra">
+            <div
+              className="integridad-relleno"
+              style={{ width: `${agente.integridad_ontologica * 100}%` }}
+            />
+          </div>
+        </div>
+        {agente.modo === 'seguro' && (
+          <span className="modo-seguro-badge" role="alert">MODO SEGURO</span>
+        )}
+      </div>
+
+      {/* ─── Alertas de Privacidad ───────────────── */}
+      {alertas.length > 0 && (
+        <div className="alertas-container" aria-live="polite">
+          <h3 className="alertas-titulo">
+            🛡️ Aegis detectó {alertas.length} señal(es)
+          </h3>
+          <ul className="alertas-lista">
+            {alertas.slice(0, 5).map((alerta) => (
+              <li
+                key={alerta.id}
+                className={`alerta-item alerta-item--${alerta.nivel}`}
+                role="alert"
+              >
+                <div className="alerta-contenido">
+                  <span className="alerta-icono">{nivelAIcono(alerta.nivel)}</span>
+                  <div className="alerta-texto">
+                    <p className="alerta-mensaje">{alerta.mensaje_usuario}</p>
+                    {alerta.origen && (
+                      <span className="alerta-origen">Origen: {alerta.origen}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="alerta-acciones">
+                  <button
+                    className="btn-bloquear"
+                    onClick={() => descartarAlerta(alerta.id)}
+                    title="Bloquear y descartar"
+                  >
+                    Bloquear
+                  </button>
+                  <button
+                    className="btn-permitir"
+                    onClick={() => descartarAlerta(alerta.id)}
+                    title="Permitir esta vez"
+                  >
+                    Permitir
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* ─── Analizador Manual (para mensajes sospechosos) ── */}
+      <AnalyzadorTexto onAnalizar={analizarTexto} />
+    </div>
+  );
+}
+
+function AnalyzadorTexto({ onAnalizar }) {
+  const handleAnalizar = (e) => {
+    e.preventDefault();
+    const texto = e.target.elements.texto.value;
+    const origen = e.target.elements.origen.value || 'usuario';
+    if (texto.trim()) {
+      onAnalizar(texto, origen);
+      e.target.reset();
+    }
+  };
+
+  return (
+    <form className="analizador-form" onSubmit={handleAnalizar}>
+      <h4 className="analizador-titulo">Analizar mensaje sospechoso</h4>
+      <input
+        name="origen"
+        type="text"
+        placeholder="¿De quién viene? (email, app…)"
+        className="analizador-input"
+      />
+      <textarea
+        name="texto"
+        placeholder="Pega aquí el mensaje que quieres que Aegis analice…"
+        className="analizador-textarea"
+        rows={3}
+        required
+      />
+      <button type="submit" className="btn-analizar">
+        🔍 Pedir a Aegis que lo analice
+      </button>
+    </form>
+  );
+}
+
+function nivelAIcono(nivel) {
+  const iconos = { bajo: 'ℹ️', medio: '⚠️', alto: '🚨', crítico: '☢️' };
+  return iconos[nivel] ?? '⚠️';
+}
