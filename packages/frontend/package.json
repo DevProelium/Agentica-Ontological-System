@@ -1,0 +1,28 @@
+{
+  "name": "@agentica/frontend",
+  "version": "1.0.0",
+  "description": "PWA – Wizard de Construcción de Agentes Ontológicos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@webcontainer/api": "^1.6.1",
+    "lucide-react": "^0.577.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
+    "vite": "^5.2.0",
+    "vite-plugin-pwa": "^0.19.5"
+  }
+}
