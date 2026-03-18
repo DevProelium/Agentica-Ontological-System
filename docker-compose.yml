@@ -1,0 +1,165 @@
+version: '3.8'
+
+# ---------------------------------------------------------------
+# Docker Compose Multiservicio - Entorno Aegis
+# ---------------------------------------------------------------
+
+services:
+  # 1. El Alma del Agente (PWA y L�gica)
+  aegis-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegis_core_pwa
+    restart: unless-stopped
+    ports:
+      - "${AEGIS_PORT:-3030}:3001"
+    volumes:
+      - ./data:/app/data
+      - ./logseq_knowledge:/app/logseq_knowledge 
+    environment:
+      - NODE_ENV=production
+      - NEO4J_URI=bolt://aegis-neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=aegis_secure_pass
+      - DATABASE_URL=postgresql://agentica_admin:aegis_pg_pass@postgres-brain:5432/agentica_knowledge
+      - REDIS_URL=redis://agentica-redis:6379
+      - MINIO_ENDPOINT=agentica-minio
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=aegis_minio_pass
+      - BROWSERLESS_URL=http://aegis-browser:3000
+      - SEARXNG_URL=http://aegis-search:8080
+      - TIKA_URL=http://aegis-tika:9998
+
+    depends_on:
+      - aegis-neo4j
+      - postgres-brain
+      - agentica-redis
+      - agentica-minio
+
+  # 2. La Mente Estructurada (Grafo Ontol�gico Neo4j)
+  aegis-neo4j:
+    image: neo4j:5-community
+    container_name: aegis_graph_db
+    restart: unless-stopped
+    ports:
+      - "3074:7474" # Interfaz Web
+      - "3087:7687" # Conexi�n Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/aegis_secure_pass
+      - NEO4J_server_memory_pagecache_size=1G
+      - NEO4J_server_memory_heap_initial__size=1G
+    volumes:
+      - ./neo4j_data/data:/data
+      - ./neo4j_data/logs:/logs
+      - ./neo4j_data/import:/var/lib/neo4j/import
+      - ./neo4j_data/plugins:/plugins
+
+  # 3. La Memoria Vectorial y de Documentos (PostgreSQL + pgvector)
+  postgres-brain:
+    image: pgvector/pgvector:pg16
+    container_name: aegis_postgres_brain
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=agentica_admin
+      - POSTGRES_PASSWORD=aegis_pg_pass
+      - POSTGRES_DB=agentica_knowledge
+    ports:
+      - "5438:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentica_admin -d agentica_knowledge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 4. Contexto de Corto Plazo e Hilos de Pensamiento (Redis)
+  agentica-redis:
+    image: redis:7-alpine
+    container_name: aegis_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 5. La Bodega de Artefactos Propios (MinIO)
+  agentica-minio:
+    image: minio/minio:latest
+    container_name: aegis_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=aegis_minio_pass
+    ports:
+      - "9005:9000"
+      - "9006:9001"
+    volumes:
+      - ./minio_data:/data
+
+  # ============================================================
+  # CAPACIDADES AUT�NOMAS (Ojos, O�dos y Manos de Aegis)
+  # ============================================================
+
+  # 6. Ojos: Navegador Headless (Navegaci�n y Scraping)
+  aegis-browser:
+    image: browserless/chrome:latest
+    container_name: aegis_browser
+    restart: unless-stopped
+    environment:
+      - MAX_CONCURRENT_SESSIONS=3
+      - MAX_QUEUE_LENGTH=10
+      - TIMEOUT=30000
+    ports:
+      - "3006:3000" # Evita colisi�n con el 3005 de tu openclaw viejo
+
+  # 7. O�dos y Radar: Motor de B�squeda Local (Evita usar Google/Bing APIs)
+  aegis-search:
+    image: searxng/searxng:latest
+    container_name: aegis_search
+    restart: unless-stopped
+    volumes:
+      - ./searxng_data:/etc/searxng
+    ports:
+      - "8086:8080" # Evita colisi�n con el 8085
+
+  # 8. Decodificador: Lector de Documentos (Rompe PDFs, Excels, Word)
+  aegis-tika:
+    image: apache/tika:latest
+    container_name: aegis_tika
+    restart: unless-stopped
+    ports:
+      - "9999:9998" # Evita colisi�n con el 9998
+
+  # 9. Manos 1: Ejecuci�n de Python (Para An�lisis de Datos, Machine Learning Local)
+  aegis-python-sandbox:
+    image: python:3.11-slim
+    container_name: aegis_python_sandbox
+    restart: unless-stopped
+    volumes:
+      - ./scripts_temp:/scripts
+      - ./data/active:/src/active
+    working_dir: /scripts
+    command: >
+      sh -c "pip install --no-cache-dir pandas numpy requests beautifulsoup4 && sleep infinity"
+
+  # 10. Manos 2: Ejecuci�n de JS/Node (Para generar micro-PWAs u otros scripts)
+  aegis-js-sandbox:
+    image: node:20-slim
+    container_name: aegis_js_sandbox
+    restart: unless-stopped
+    volumes:
+      - ./scripts_temp:/scripts
+      - ./data/active:/src/active
+    working_dir: /scripts
+    command: sleep infinity
+
+
