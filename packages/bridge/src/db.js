@@ -29,8 +29,8 @@ const minioClient = new MinioClient({
   endPoint: minioUrl.hostname,
   port: parseInt(minioUrl.port) || 9005,
   useSSL: minioUrl.protocol === 'https:',
-  accessKey: process.env.MINIO_ACCESS_KEY || 'admin',
-  secretKey: process.env.MINIO_SECRET_KEY || 'aegis_minio_pass',
+  accessKey: 'minioadmin',
+  secretKey: 'minioadmin',
 });
 
 export async function iniciarSistemasCognitivos() {

@@ -15,7 +15,25 @@ import useOntologyStore from '../store/ontologyStore.js';
  * @param {Function} [opciones.onMensaje] – Callback al recibir un mensaje
  * @param {boolean} [opciones.reconectar] – Si debe intentar reconexión automática
  */
+const getWsUrl = (urlDefault) => {
+  if (typeof window === 'undefined') return urlDefault;
+  
+  // Extraemos datos de la URL actual donde se carga Aegis
+  const { protocol, host, hostname } = window.location;
+  
+  // Si estamos en entorno local, apuntamos directo al Bridge en localhost:3030
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return urlDefault;
+  }
+  
+  // Si el frontend se carga desde Cloudflare Tunnel (https://aegis.agentica-metaverse.com),
+  // utilizamos webSockets seguros (wss://) apuntando al mismo dominio bajo la ruta /ws
+  // ya que Vite (o tu servidor de producción) expone o proxifica /ws hacia el puerto 3030.
+  return `${protocol === 'https:' ? 'wss:' : 'ws:'}//${host}/ws`;
+};
+
 export function useWebSocket({ url = 'ws://localhost:3030', onMensaje, reconectar = true } = {}) {
+  const wsUrl = getWsUrl(url);
   const ws = useRef(null);
   const reconectarTimer = useRef(null);
   const { setBridgeConectado, agregarAlerta, agregarTeorema } = useOntologyStore();
@@ -24,7 +42,7 @@ export function useWebSocket({ url = 'ws://localhost:3030', onMensaje, reconecta
     if (ws.current?.readyState === WebSocket.OPEN) return;
 
     try {
-      ws.current = new WebSocket(url);
+      ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => {
         setBridgeConectado(true);
@@ -57,7 +75,7 @@ export function useWebSocket({ url = 'ws://localhost:3030', onMensaje, reconecta
         reconectarTimer.current = setTimeout(conectar, 3000);
       }
     }
-  }, [url, onMensaje, reconectar, setBridgeConectado, agregarAlerta, agregarTeorema]);
+  }, [wsUrl, onMensaje, reconectar, setBridgeConectado, agregarAlerta, agregarTeorema]);
 
   const enviarMensaje = useCallback((payload) => {
     if (ws.current?.readyState === WebSocket.OPEN) {

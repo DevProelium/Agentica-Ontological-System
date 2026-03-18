@@ -29,9 +29,12 @@ export default function App() {
   ];
 
   return (
-    <div className='flex h-screen bg-aegis-900 text-gray-200 font-sans overflow-hidden'>
+    <div className='flex min-h-screen w-full bg-aegis-900 text-gray-200 font-sans overflow-x-hidden relative'>
+      <div id="stars"></div>
+      <div id="stars2"></div>
+      <div id="stars3"></div>
       {vistaActual !== VISTAS.WIZARD && (
-        <nav className='w-20 md:w-64 bg-aegis-800 border-r border-aegis-700 flex flex-col py-8 shadow-xl relative z-20'>
+        <nav className='w-20 md:w-64 bg-aegis-800/80 border-r border-aegis-700/50 flex flex-col py-8 shadow-[0_0_30px_rgba(0,230,240,0.05)] relative z-20 sticky top-0 h-screen backdrop-blur-md'>
           <div className='flex items-center justify-center md:justify-start gap-3 mb-10 px-6'>
             <Hexagon className='text-aegis-accent animate-pulse shrink-0' size={32} />
             <span className='hidden md:block text-xl font-bold tracking-widest text-white'>AEGIS</span>
@@ -63,19 +66,19 @@ export default function App() {
         </nav>
       )}
 
-      <main className='flex-1 overflow-y-auto relative p-6 md:p-8 z-10'>
-        <div className='absolute top--10%] right-[-5%] w-96 h-96 bg-aegis-accent/10 rounded-full blur-[120px] pointer-events-none'></div>
+      <main className='flex-1 relative p-4 md:p-6 z-10 w-full min-h-screen flex flex-col items-center justify-center'>
+        <div className='absolute top-[-5%] right-[-5%] w-96 h-96 bg-aegis-accent/10 rounded-full blur-[120px] pointer-events-none'></div>
         <div className='absolute bottom-[-10%] left-[-5%] w-[30rem] h-[30rem] bg-indigo-600/5 rounded-full blur-[150px] pointer-events-none'></div>
 
 
-        <div className='relative z-10 w-full max-w-7xl mx-auto h-full'>
+        <div className='relative z-10 w-full max-w-7xl mx-auto flex-1 flex flex-col justify-center'>
           <Suspense fallback={<CargandoAegis />}>
             {vistaActual === VISTAS.WIZARD && <WizardFlow onCompletado={() => setVistaActual(VISTAS.DASHBOARD)} />}
-            {vistaActual === VISTAS.DASHBOARD && <div className='bg-aegis-800/80 backdrop-blur-md rounded-2xl border border-aegis-700 p-6 min-h-[calc(100vh-4rem)] shadow-2xl'><Dashboard /></div>}
-            {vistaActual === VISTAS.EDITOR && <div className='bg-aegis-800/80 backdrop-blur-md rounded-2xl border border-aegis-700 p-6 min-h-[#alc(100vh-4rem)] shadow-2xl overflow-auto'><AxiomEditor documentoInicial={documentoActivo?.contenido || ''} /></div>}
-            {vistaActual === VISTAS.GRAFO && <div className='bg-aegis-800/80 backdrop-blur-md rounded-2xl border border-aegis-700 p-6 min-h-[calc(100vh-4rem)] shadow-2xl'><GraphView nodos={documentoActivo?.grafoParsed?.nodes ?? []} relaciones={documentoActivo?.grafoParsed?.relations ?? []} /></div>}
-            {vistaActual === VISTAS.ESCUDO && <div className='bg-aegis-800/80 backdrop-blur-md rounded-2xl border border-aegis-700 p-6 min-h-[calc(100vh-4rem)] shadow-2xl overflow-auto'><PrivacyShield /></div>}
-            {vistaActual === VISTAS.SANDBOX && <div className='bg-aegis-800/80 backdrop-blur-md rounded-2xl border border-aegis-700 p-4 min-h-[#alc(100vh-4rem)] shadow-2xl overflow-hidden'><EdgeSandbox /></div>}
+            {vistaActual === VISTAS.DASHBOARD && <div className='flex items-stretch bg-aegis-800/60 backdrop-blur-xl rounded-2xl border border-aegis-700/50 p-4 md:p-6 min-h-[calc(100vh-3rem)] shadow-[0_0_40px_rgba(0,0,0,0.5)] w-full transition-all duration-500 hover:shadow-[0_0_50px_rgba(0,230,240,0.1)]'><Dashboard /></div>}
+            {vistaActual === VISTAS.EDITOR && <div className='bg-aegis-800/60 backdrop-blur-xl rounded-2xl border border-aegis-700/50 p-4 md:p-6 w-full shadow-[0_0_40px_rgba(0,0,0,0.5)]'><AxiomEditor documentoInicial={documentoActivo?.contenido || ''} /></div>}
+            {vistaActual === VISTAS.GRAFO && <div className='bg-aegis-800/60 backdrop-blur-xl rounded-2xl border border-aegis-700/50 p-4 md:p-6 w-full shadow-[0_0_40px_rgba(0,0,0,0.5)]'><GraphView nodos={documentoActivo?.grafoParsed?.nodes ?? []} relaciones={documentoActivo?.grafoParsed?.relations ?? []} /></div>}
+            {vistaActual === VISTAS.ESCUDO && <div className='bg-aegis-800/60 backdrop-blur-xl rounded-2xl border border-aegis-700/50 p-4 md:p-6 w-full shadow-[0_0_40px_rgba(0,0,0,0.5)]'><PrivacyShield /></div>}
+            {vistaActual === VISTAS.SANDBOX && <div className='bg-aegis-800/60 backdrop-blur-xl rounded-2xl border border-aegis-700/50 p-4 w-full shadow-[0_0_40px_rgba(0,0,0,0.5)]'><EdgeSandbox /></div>}
           </Suspense>
         </div>
       </main>

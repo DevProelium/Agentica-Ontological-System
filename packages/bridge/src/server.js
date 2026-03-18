@@ -28,10 +28,13 @@ wss.on('connection', (ws, req) => {
   const ip = req.socket.remoteAddress ?? '';
 
   const ALLOWED_IPS = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
-  if (!ALLOWED_IPS.has(ip)) {
-    console.warn('[Aegis Bridge] Conexion rechazada desde IP: ' + ip);
-    ws.close(1008, 'Solo conexiones locales permitidas');
-    return;
+  // Si usas Cloudflare Tunnel, la IP que llega puede ser diferente o venir en cabeceras.
+  // Por ahora relajamos esta restricción para permitir que el túnel direccione tráfico.
+  // En producción real, considera validar el header cf-access-token o similar.
+  if (!ALLOWED_IPS.has(ip) && process.env.NODE_ENV !== 'production') {
+    console.warn(`[Aegis Bridge] Conexión detectada desde IP: ${ip}. (Modo Cloudflare Tunnel)`);
+    // ws.close(1008, 'Solo conexiones locales permitidas');
+    // return;
   }
 
   estado.clientes.set(clienteId, {

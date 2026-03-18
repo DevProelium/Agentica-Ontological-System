@@ -21,7 +21,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col gap-6 h-full text-gray-200">
+    <div className="flex flex-col gap-6 w-full text-gray-200">
       
       {/* HEADER: Identidad Criptogr�fica �nica */}
       <div className="bg-aegis-900/60 border border-aegis-700/50 rounded-2xl p-4 flex items-center justify-between shadow-lg backdrop-blur-md">
@@ -51,7 +51,7 @@ export default function Dashboard() {
       </div>
 
       {/* MID SECTION: Orbe de Presencia & Control */}
-      <div className="flex flex-col md:flex-row gap-6 flex-1 min-h-0">
+      <div className="flex flex-col md:flex-row gap-6">
         
         {/* The Core Orb */}
         <div className="flex-1 bg-aegis-800/40 border border-aegis-700/50 rounded-2xl flex flex-col items-center justify-center p-8 relative overflow-hidden backdrop-blur-sm">
@@ -90,7 +90,7 @@ export default function Dashboard() {
             <h3 className="text-sm uppercase tracking-widest font-semibold flex-1 text-amber-100">Máscaras</h3>
             <span className="text-xs text-gray-500 font-mono">{mascarasDisponibles?.length || 0} ALMACENADAS</span>
           </div>
-          <div className="overflow-y-auto pr-2 custom-scrollbar flex-1 flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
              {mascarasDisponibles?.map(masc => (
                  <div key={masc.id} className={`p-3 rounded-lg border transition-all ${mascaraActiva?.id === masc.id ? 'bg-amber-900/30 border-amber-500 shadow-[0_0_15px_rgba(251,191,36,0.15)]' : 'bg-aegis-900/50 border-aegis-700 hover:border-amber-700/50'}`}>
                     <div className="flex justify-between items-start mb-2">
@@ -116,7 +116,7 @@ export default function Dashboard() {
             <h3 className="text-sm uppercase tracking-widest font-semibold flex-1">Libro de Planos</h3>
             <span className="text-xs text-gray-500 font-mono">{axiomas.length} AXIOMAS</span>
           </div>
-          <div className="overflow-y-auto pr-2 custom-scrollbar flex-1 flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
              {axiomas.length > 0 ? (
                 axiomas.slice(0, 5).map(ax => (
                    <div key={ax.id || ax.tema} className={`p-3 rounded border-l-2 text-sm ${ax.esMascara ? 'bg-amber-900/20 border-amber-500' : 'bg-aegis-900/50 border-aegis-accent'}`}>
@@ -160,12 +160,12 @@ export default function Dashboard() {
             <h4 className="font-semibold text-sm uppercase tracking-wide">Consenso Interno</h4>
           </div>
           <p className="text-xs text-gray-400 mb-4 h-8">Decisiones cr�ticas trianguladas entre m�dulos de conciencia.</p>
-          <div className="flex items-center justify-between px-2">
-            <div className="flex flex-col items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_5px_theme(colors.amber.400)]"></div><span className="text-[10px] text-gray-400">L�gica</span></div>
-            <div className="h-px bg-aegis-700 flex-1 mx-2"></div>
-            <div className="flex flex-col items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_5px_theme(colors.amber.400)] text-[10px]"></div><span className="text-[10px] text-gray-400">Moral</span></div>
-            <div className="h-px bg-aegis-700 flex-1 mx-2"></div>
-            <div className="flex flex-col items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_5px_theme(colors.amber.400)]"></div><span className="text-[10px] text-gray-400">Memoria</span></div>
+          <div className="flex items-center justify-between px-1 gap-1 xl:px-2">
+            <div className="flex flex-col items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_5px_theme(colors.amber.400)]"></div><span className="text-[9px] sm:text-[10px] text-gray-400">Lógica</span></div>
+            <div className="h-px bg-aegis-700 flex-1 mx-1 min-w-[4px] xl:mx-2"></div>
+            <div className="flex flex-col items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_5px_theme(colors.amber.400)] text-[10px]"></div><span className="text-[9px] sm:text-[10px] text-gray-400">Moral</span></div>
+            <div className="h-px bg-aegis-700 flex-1 mx-1 min-w-[4px] xl:mx-2"></div>
+            <div className="flex flex-col items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_5px_theme(colors.amber.400)]"></div><span className="text-[9px] sm:text-[10px] text-gray-400 truncate max-w-[45px] sm:max-w-none">Memoria</span></div>
           </div>
           <div className="mt-3 text-center text-xs text-amber-400/80 bg-amber-400/10 py-1 rounded">Consenso Logrado (100%)</div>
         </div>

@@ -15,7 +15,10 @@ Este documento rastrea la evolución de Aegis de un script ontológico a un Prod
 ## FASE 3: El "Milagro del Navegador" (Arquitectura PWA Cero Instalación) 🌐
 *El objetivo aquí es dar autonomía al agente corriendo todo lo posible nativamente en el navegador sin Docker.*
 - [ ] **Ejecución de Código Local (Sandbox):** Integrar WebContainers (para JS) o Pyodide (para Python) directo en la PWA para que el agente pueda programar y analizar datos en el cliente.
-- [ ] **Memoria Autónoma en el Cliente:** Probar/Añadir IndexedDB, PGLite o la librería Orama para búsquedas vectoriales semánticas rápidas directamente en la memoria del navegador.
+- [ ] **Persistencia Local-First ("El Stack Espejo"):** Configurar los adaptadores de persistencia para la PWA:
+  - [ ] **IndexedDB (Dexie):** En lugar de Redis, persistir la sesión y cachés rápidas.
+  - [ ] **PGLite + pgvector / Orama:** En lugar de PostgreSQL, motor relacional y vectorial P2P local.
+  - [ ] **Cytoscape.js:** En lugar de Neo4j, usar el motor de grafos en memoria (con volcado a IndexedDB).
 - [ ] **Gestor de Conexiones LLM:** Interfaz en la PWA para que el usuario ponga sus llaves (Groq, Gemini) de forma segura en local, o use modelos ultra-ligeros vía WebGPU directamente.
 
 ## FASE 4: "Desatar la Bestia" (Power Users) 🚀

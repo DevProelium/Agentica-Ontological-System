@@ -1,107 +1,107 @@
 ﻿import { useState, useEffect, useRef } from 'react';
-import { Terminal, Play, Square } from 'lucide-react';
-import { bootWebContainer, ejecutarComando } from '../../core/browserSandbox.js';
+import { Terminal as TerminalIcon } from 'lucide-react';
+import { getWebContainer } from '../../core/browserSandbox.js';
+import { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import '@xterm/xterm/css/xterm.css';
 
 export default function EdgeSandbox() {
   const [listo, setListo] = useState(false);
-  const [comando, setComando] = useState('');
-  const [output, setOutput] = useState([]);
-  const [error, setError] = useState(null);
-  const outputRef = useRef(null);
+  const terminalRef = useRef(null);
+  const terminalInstance = useRef(null);
+  const shellProcess = useRef(null);
 
   useEffect(() => {
-    async function iniciarSandbox() {
+    // 1. Inicializar Xterm.js
+    const fitAddon = new FitAddon();
+    const term = new Terminal({
+      cursorBlink: true,
+      fontFamily: '"Fira Code", monospace',
+      fontSize: 14,
+      theme: {
+        background: '#0f172a',
+        foreground: '#10b981',
+        cursor: '#10b981',
+      }
+    });
+
+    term.loadAddon(fitAddon);
+    if (terminalRef.current) {
+      term.open(terminalRef.current);
+      fitAddon.fit();
+    }
+    terminalInstance.current = term;
+
+    term.writeln('\x1b[1;36m[Aegis]\x1b[0m Iniciando Sandbox Engine (Edge V8) \x1b[5m...\x1b[0m');
+
+    let isMounted = true;
+    async function init() {
       try {
-        await bootWebContainer();
+        const wc = await getWebContainer();
+        if (!isMounted) return;
+
         setListo(true);
-        setOutput(prev => [...prev, '[Aegis] WebContainer listo. Entorno Node.js en el navegador iniciado.']);
+        term.write('\x1b[2J\x1b[0;0H'); 
+        term.writeln('\x1b[1;32m[Aegis] WebContainer listo.\x1b[0m Eres root temporal del entorno.');
+
+        // 3. Crear proceso 'jsh'
+        const process = await wc.spawn('jsh', {
+          terminal: {
+            cols: term.cols,
+            rows: term.rows,
+          },
+        });
+        shellProcess.current = process;
+
+        // 4. Conectar output
+        process.output.pipeTo(new WritableStream({
+          write(data) {
+            term.write(data);
+          }
+        }));
+
+        // 5. Conectar input
+        const processInput = process.input.getWriter();
+        term.onData((data) => {
+          processInput.write(data);
+        });
+
       } catch (err) {
-        setError(err.message || 'Error al iniciar el Sandbox');
+        if (isMounted) term.writeln(`\r\n\x1b[1;31mError al iniciar:\x1b[0m ${err.message}`);
       }
     }
-    iniciarSandbox();
+
+    init();
+
+    const handleResize = () => fitAddon.fit();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('resize', handleResize);
+      if (shellProcess.current) {
+         shellProcess.current.kill();
+      }
+      term.dispose();
+    };
   }, []);
 
-  useEffect(() => {
-    if (outputRef.current) {
-      outputRef.current.scrollTop = outputRef.current.scrollHeight;
-    }
-  }, [output]);
-
-  const handleEnecutar = async (e) => {
-    e.preventDefault();
-    if (!comando.trim()) return;
-
-    const cmd = comando.trim();
-    setComando('');
-    setOutput(prev => [...prev, `$ ${cmd}`]);
-
-    if (cmd === 'clear') {
-      setOutput([]);
-      return;
-    }
-
-    try {
-      const parts = cmd.split(' ');
-      const baseCmd = parts[0];
-      const args = parts.slice(1);
-
-      const proceso = await ejecutarComando(baseCmd, args);
-      
-      proceso.output.pipeTo(new WritableStream({
-        write(data) {
-          setOutput(prev => [...prev, data]);
-        }
-      }));
-      let exitCode = await proceso.exit;
-      if(exitCode !== 0) { SetOutput(prev => [...prev, `Proceso terminado con código: ${exitCode}`]); }
-    } catch (err) {
-      setOutput(prev => [...prev, `Error: ${err.message}`]);
-    }
-  };
-
   return (
-    <div className="flex flex-col h-full width-full bg-gray-900 text-green-400 font-mono p-4 rounded-lg shadow-inner">
-      <div className="mb-4 flex items-center justify-between border-b border-gray-700 pb-2">
-        <h2 className="text-lg flex items-center gap-2">
-          <Terminal size={20} /> Aegis Edge Sandbox
+    <div className="flex flex-col h-full w-full bg-gray-900 border border-aegis-700 rounded-lg shadow-2xl overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-aegis-700">
+        <h2 className="text-sm font-bold text-gray-300 flex items-center gap-2 uppercase tracking-wide">
+          <TerminalIcon size={16} className="text-aegis-accent" /> Aegis Edge xTerm
         </h2>
-        <div className="flex items-center gap-2 text-sm">
-          <span className={listo ? "text-green-500" : "text-yellow-500"}>
-            { listo ? "Online" : "Iniciando..." }
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <span className={listo ? "text-green-400" : "text-yellow-400"}>
+            { listo ? "CONECTADO" : "SINCRONIZANDO..." }
           </span>
-          <div className={`h-2 w-2 rounded-full ${listo ? "bg-green-500" : "bg-yellow-500 animate-pulse"}`}></div>
+          <div className={`h-2 w-2 rounded-full ${listo ? "bg-green-500 shadow-[0_0_8px_#10b981]" : "bg-yellow-500 animate-pulse"}`}></div>
         </div>
       </div>
-
-      <div 
-        ref={outputRef} 
-        className="flex-1 overflow-y-auto bg-black p-4 rounded mb-4 whitespace-pre-wrap"
-        style={{ minHeight: '400px' }}
-      >
-        {error && <div className="text-red-500 mb-2">Error: {error}</div>}
-        {output.map((line, i) => (
-          <div key={i + 'line'} style={{ pointerEvents: 'none' }}>{line}</div>
-        ))}
+      <div className="flex-1 w-full relative bg-[#0f172a]" style={{ minHeight: '400px' }}>
+         <div ref={terminalRef} className="absolute inset-0 pl-2 pt-2 h-full w-full overflow-hidden" />
       </div>
-
-      <form onSubmit={handleEjecutar} className="flex gap-2">
-        <input
-          type="text"
-          value={comando}
-          onChange={(e) => setComando(e.target.value)}
-          placeholder={listo ? "ls l,  node -v, echo 'hola'" : "Esperando Sandbox..."}
-          disabled={!listo}
-          className="flex-1 bg-gray-800 border border-gray-700 text-white p-2 rounded focus:outline-none focus:border-green-500"
-        />
-        <button 
-          type="submit" 
-          disabled={!listo || !comando.trim()}
-          className="bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded flex items-center gap-2 font-bold"
-        >
-          <Play size={18} /> Ejecutar
-        </button>
-      </form>
     </div>
   );
 }

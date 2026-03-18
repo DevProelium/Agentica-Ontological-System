@@ -1,0 +1,23 @@
+{
+  "name": "agentica-ontological-system",
+  "version": "1.0.0",
+  "description": "Wizard de Construcción de Agentes Ontológicos Humanistas (PWA + Neo4j + WebSocket Bridge)",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/frontend",
+    "packages/bridge"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=packages/frontend\" \"npm run dev --workspace=packages/bridge\"",
+    "build": "npm run build --workspace=packages/frontend",
+    "start": "npm run start --workspace=packages/bridge",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "lint": "eslint packages --ext .js,.jsx"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0"
+  }
+}

@@ -88,7 +88,7 @@ export default function GraphView({ nodos = [], relaciones = [] }) {
             const isHostile = rel.tipo?.toLowerCase().includes('defiende');
 
             return (
-              <g key={el--\}>                <line
+              <g key={`el-${i}`}>\n                <line
                   x1={pos1.x} y1={pos1.y}
                   x2={pos2.x} y2={pos2.y}
                   stroke={isHostile ? "#f43f5e" : "#3b82f6"}
@@ -123,7 +123,7 @@ export default function GraphView({ nodos = [], relaciones = [] }) {
             else color = COLORES_NODO.Concepto;
 
             return (
-              <g key={nodo.id} transform={	ranslate(, )}>                <circle 
+              <g key={nodo.id} transform={`translate(${pos.x}, ${pos.y})`}>                <circle 
                   r={isCenter ? 35 : 25} 
                   fill="#0f172a" 
                   stroke={color} 

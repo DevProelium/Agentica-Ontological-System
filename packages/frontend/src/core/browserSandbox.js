@@ -58,3 +58,4 @@ export async function ejecutarComando(cmd, args, onOutput) {
 
   return process.exit;
 }
+export async function getWebContainer() { return webcontainerInstance || await bootWebContainer(); }

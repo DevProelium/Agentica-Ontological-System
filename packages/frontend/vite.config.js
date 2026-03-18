@@ -35,6 +35,11 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    allowedHosts: [
+      'aegis.agentica-metaverse.com',
+      'localhost',
+      '127.0.0.1'
+    ],
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
